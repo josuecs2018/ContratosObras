@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contratos</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .buttons {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .actions button {
+      background-color: #dc3545;
+      margin: 0 2px;
+    }
+
+    .actions button.edit {
+      background-color: #ffc107;
+    }
+
+    .actions button:hover {
+      opacity: 0.8;
+    }
+    select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: white;
+  font-size: 16px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='gray' height='18' viewBox='0 0 24 24' width='18' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: border 0.3s ease;
+}
+select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+  </style>
+  
+</head>
+<body>
+  <div style="text-align: center;">
+    <img src="https://www.portovelho.ro.gov.br/assets/site/img/logos/PREFEITURA_HORIZONTAL.png" 
+         alt="Logotipo da prefeitura de Porto Velho"
+         style="height: 130px; width: auto; display: inline-block;">
+  </div>
+  <h1>Gestão de Contratos e Obras</h1>
+
+  <form id="formulario">
+    <label>Código CNPJ:<input id="cnpj" maxlength="18" required oninput="mascaraCNPJ(this)" /></label>
+    <label>ID Contrato PNCP:<input id="idcontrato" maxlength="20" required /></label>
+    <label>Número do Processo Administrativo:<input id="processo" maxlength="16" required /></label>
+    <label>Ano do Processo Administrativo:<input id="anoproc" maxlength="4" required /></label>
+    <label>Número do Contrato:<input id="contrato" maxlength="16" required /></label>
+    <label>Ano Contrato:<input id="anocontrato" maxlength="4" required /></label>
+    <label>Informe o número do CNPJ ou CPF da pessoa contratada.:<input id="contratado" maxlength="14" required /></label>
+    <label>Informe o tipo do contratado. Preencher com:
+        F - Física /
+        J - Jurídica:<select id="tppessoa" maxlength="1" required>
+            <option value="">Selecione</option>
+            <option value="F">F - Física</option>
+            <option value="J">J - Jurídica</option>
+          </select>
+    <label>Objeto de contratação:<textarea id="objeto" maxlength="5000" required></textarea></label>
+    <label>Valor Inicial:<input id="valini" type="text" oninput="mascaraMoeda(this)" maxlength="11" required /></label>
+    <label>Data Vigência:<input id="datavig" type="date" maxlength="10" required /></label>
+    <label>Data Publicação:<input id="datapub" type="date" maxlength="10" required /></label>
+    <label>Local Publicação:<input id="localpub" maxlength="1024" required /></label>
+    <label>Qtd. de Gestores: <input id="qtdegestor" type="number" min="1" oninput="gerarCamposGestores()"></label>
+<div id="camposGestores"></div>
+    <label>CPFs Fiscais (separados por vírgula ","):<input id="cpffiscais" required /></label>
+    <label>Tipo Contrato:
+        <select id="tipo" maxlength="1" required >
+            <option value="">Informe o tipo do contrato</option>
+            <option value="1">1 - Contrato</option>
+            <option value="2">2 - Convênio</option>
+            <option value="3">3 - Acordo de Cooperação</option>
+            <option value="4">4 - Adesão</option>
+          </select>
+
+    <label>Número do Instrumento Convocatório:<input id="instconv" maxlength="16" required /></label>
+    <label>Ano do Instrumento Convocatório:<input id="anoinstconv" maxlength="4" required /></label>
+    <label>Tipo de Instrumento Convocatório:
+        <select id="tpinstconv" maxlength="1" required>
+            <option value="">Selecione</option>
+            <option value="1">1 - Edital</option>
+            <option value="2">2 - Edital RDC</option>
+            <option value="3">3 - Chamamento Público</option>
+          </select>
+    <label>Modalidade de Licitação:
+        <select id="mod" maxlength="2" maxlength="2" required >
+            <option value="">Selecione</option>
+            <option value="1">1 - Concorrência</option>
+            <option value="2">2 - Tomada de Preço</option>
+            <option value="3">3 - Convite</option>
+            <option value="4">4 - Concurso</option>
+            <option value="5">5 - Pregão Eletrônico</option>
+            <option value="6">6 - Pregão Presencial</option>
+            <option value="7">7 - Leilão</option>
+            <option value="8">8 - Dispensa</option>
+            <option value="9">9 - Inexigilibidade</option>
+            <option value="10">10 - Diálogo Competitivo</option>
+          </select>
+    <label>Número da Ata de Registro de Preços:<input id="arp" maxlength="16" required /></label>
+    <label>Nome do arquivo PDF do contrato:<input id="arquivo" maxlength="20" required /></label>
+    <label>Permite subcontratação (S/N):
+        <select id="subcontrato" maxlength="1" required>
+            <option value="">Informe se o contrato possui clausula que autorize a subcontratação</option>
+            <option value="S">S - Sim</option>
+            <option value="N">N - Não</option>
+          </select>
+    <label>Obra/Serviço de engenharia (S/N):
+        <select id="obra" maxlength="1" required>
+            <option value="">Informe se o contrato é referente a obra/serviço de engenharia</option>
+            <option value="S">S - Sim</option>
+            <option value="N">N - Não</option>
+          </select>
+
+    <div class="buttons">
+      <button type="button" onclick="adicionarContrato()">Adicionar</button>
+      <button type="button" onclick="exportarExcel()">Exportar Excel</button>
+      <button type="button" onclick="exportarXML()">Exportar XML</button>
+    </div>
+  </form>
+  <h1>Contratos já cadastrados</h1>
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>CNPJ</th>
+        <th>Contrato</th>
+        <th>Processo</th>
+        <th>Valor</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const contratos = [];
+
+    function limparMascaraCNPJ(cnpj) {
+      return cnpj.replace(/\D/g, "");
+    }
+
+    function mascaraCNPJ(campo) {
+      let v = campo.value.replace(/\D/g, "").slice(0, 14);
+      campo.value = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+    }
+
+    function limparCampos() {
+      document.querySelectorAll("#formulario input, #formulario textarea").forEach(el => el.value = "");
+    }
+
+    function adicionarContrato(editIndex = null) {
+      const campos = [...document.querySelectorAll("#formulario input[required], #formulario textarea[required]")];
+      if (!campos.every(c => c.value.trim() !== "")) return alert("Preencha todos os campos obrigatórios!");
+        const tpinstconv = document.getElementById("tpinstconv").value;
+        const mod = document.getElementById("mod").value.trim();
+        const tipo = document.getElementById("tipo").value.trim();
+        const arp = document.getElementById("arp").value.trim();
+        const anoinstconv = document.getElementById("anoinstconv").value.trim();
+        const instconv = document.getElementById("instconv").value.trim();
+
+        if (tpinstconv === "1" && mod === "") {
+            alert("O campo 'Modalidade de Licitação' é obrigatório quando 'Tipo Inst. Conv.' for igual a 1.");
+            return;
+        }
+        if (!["8", "9"].includes(mod) && tipo === "1" && instconv === "") {
+            alert("O campo 'Inst. Conv.' é obrigatório quando 'MOD' for diferente de 8 ou 9 e 'Tipo' for igual a 1.");
+            return;
+        }
+        if (!["8", "9"].includes(mod) && tipo === "1" && anoinstconv === "") {
+            alert("O campo 'Ano Inst. Conv.' é obrigatório quando 'MOD' for diferente de 8 ou 9 e 'Tipo' for igual a 1.");
+            return;
+        }
+        if ((mod !== "8" && mod !== "9") && tipo === "1" && tpinstconv === "") {
+            alert("O campo 'Tipo de Instrumento Convocatório' é obrigatório quando 'Modalidade de Licitação' for diferente de 8 e 9 e 'Tipo' igual a 1.");
+            return;
+        }
+        if (["1", "5", "6"].includes(mod) && tipo === "1" && arp === "") {
+            alert("O campo 'Número da Ata de Registro de Preços' é obrigatório quando 'Modalidade de Licitação' for 1, 5 ou 6 e 'Tipo' for igual a 1.");
+            return;
+        }
+
+      const contrato = {
+        MesAnoMovimento: new Date().toISOString().slice(0, 10),
+        cnpj: limparMascaraCNPJ(document.getElementById("cnpj").value),
+        idcontratopncp: document.getElementById("idcontrato").value,
+        processo: document.getElementById("processo").value,
+        anoproc: document.getElementById("anoproc").value,
+        contrato: document.getElementById("contrato").value,
+        anocontrato: document.getElementById("anocontrato").value,
+        contratado: document.getElementById("contratado").value,
+        tppessoa: document.getElementById("tppessoa").value,
+        objeto: document.getElementById("objeto").value,
+        valini: parseFloat(document.getElementById("valini").value).toFixed(2),
+        datavig: document.getElementById("datavig").value,
+        datapub: document.getElementById("datapub").value,
+        localpub: document.getElementById("localpub").value,
+        qtdegestor: document.getElementById("qtdegestor").value,
+        cpfgestor: Array.from(document.querySelectorAll(".cpfgestor")).map(i => i.value.trim()),
+        qtdefiscal: document.getElementById("cpffiscais").value.split(",").length,
+        cpffiscais: document.getElementById("cpffiscais").value.split(",").map(s => s.trim()),
+        tipo: document.getElementById("tipo").value,
+        instconv: document.getElementById("instconv").value,
+        anoinstconv: document.getElementById("anoinstconv").value,
+        tpinstconv: document.getElementById("tpinstconv").value,
+        mod: document.getElementById("mod").value,
+        arp: document.getElementById("arp").value,
+        arquivo: document.getElementById("arquivo").value,
+        subcontrato: document.getElementById("subcontrato").value,
+        obra: document.getElementById("obra").value
+      };
+
+      if (editIndex !== null) {
+        contratos[editIndex] = contrato;
+      } else {
+        contratos.push(contrato);
+      }
+
+      atualizarTabela();
+      limparCampos();
+    }
+
+    function atualizarTabela() {
+      const tbody = document.querySelector("#tabela tbody");
+      tbody.innerHTML = "";
+      contratos.forEach((c, i) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${c.cnpj}</td>
+            <td>${c.contrato}</td>
+            <td>${c.processo}</td>
+            <td>${c.valini}</td>
+            <td class="actions">
+              <button class="edit" onclick="editarContrato(${i})">Editar</button>
+              <button onclick="deletarContrato(${i})">Excluir</button>
+            </td>
+          </tr>`;
+      });
+    }
+
+    function editarContrato(index) {
+      const c = contratos[index];
+      for (let key in c) {
+        const el = document.getElementById(key);
+        if (el) el.value = Array.isArray(c[key]) ? c[key].join(", ") : c[key];
+      }
+      deletarContrato(index); // Remove da lista e o usuário clica "Adicionar" novamente após editar
+    }
+
+    function deletarContrato(index) {
+      contratos.splice(index, 1);
+      atualizarTabela();
+    }
+
+    function exportarExcel() {
+      const ws = XLSX.utils.json_to_sheet(contratos);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Contratos");
+      XLSX.writeFile(wb, "contratos.xlsx");
+    }
+    function gerarCamposGestores() {
+  const qtde = parseInt(document.getElementById("qtdegestor").value) || 0;
+  const container = document.getElementById("camposGestores");
+  container.innerHTML = "";
+
+  for (let i = 0; i < qtde; i++) {
+    const label = document.createElement("label");
+    label.textContent = `CPF do Gestor ${i + 1}:`;
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "cpfgestor";
+    input.placeholder = "Digite o CPF";
+    input.required = true;
+    label.appendChild(input);
+    container.appendChild(label);
+  }
+}
+function mascaraMoeda(campo) {
+  let valor = campo.value.replace(/\D/g, "");
+  valor = (parseInt(valor) / 100).toFixed(2) + "";
+  valor = valor.replace(".", ",");
+  valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+  campo.value = "R$ " + valor;
+}
+
+function exportarXML() {
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<Raiz>\n`;
+
+  // Usa o primeiro mês/ano encontrado (todos devem ter o mesmo)
+  if (contratos.length > 0) {
+    xml += `  <MesAnoMovimento>${contratos[0].MesAnoMovimento}</MesAnoMovimento>\n`;
+  }
+
+  xml += `  <RolContratos>\n`;
+
+  contratos.forEach(c => {
+    xml += `    <Contrato>\n`;
+    xml += `      <cnpj>${c.cnpj}</cnpj>\n      <idcontratopncp>${c.idcontratopncp}</idcontratopncp>\n      <processo>${c.processo}</processo>\n`;
+    xml += `      <anoproc>${c.anoproc}</anoproc>\n      <contrato>${c.contrato}</contrato>\n      <anocontrato>${c.anocontrato}</anocontrato>\n`;
+    xml += `      <contratado>${c.contratado}</contratado>\n      <tppessoa>${c.tppessoa}</tppessoa>\n      <objeto>${c.objeto}</objeto>\n`;
+    let valorNumerico = c.valini.replace("R$ ", "").replace(/\./g, "").replace(",", ".");
+xml += `    <valini>${valorNumerico}</valini>\n`;
+    xml += `      <qtdegestor>${c.qtdegestor.toString().padStart(2, "0")}</qtdegestor>\n`;
+    c.cpfgestor.forEach(cpf => {
+      xml += `      <agpgestor>\n        <cpfgestor>${cpf}</cpfgestor>\n      </agpgestor>\n`;
+    });
+    xml += `      <qtdefiscal>${c.qtdefiscal}</qtdefiscal>\n`;
+    c.cpffiscais.forEach(cpf => {
+      xml += `      <agpfiscal>\n        <cpffiscal>${cpf}</cpffiscal>\n      </agpfiscal>\n`;
+    });
+    xml += `      <tipo>${c.tipo}</tipo>\n      <instconv>${c.instconv}</instconv>\n      <anoinstconv>${c.anoinstconv}</anoinstconv>\n`;
+    xml += `      <tpinstconv>${c.tpinstconv}</tpinstconv>\n      <mod>${c.mod}</mod>\n      <arp>${c.arp}</arp>\n      <arquivo>${c.arquivo}</arquivo>\n`;
+    xml += `      <subcontrato>${c.subcontrato}</subcontrato>\n      <obra>${c.obra}</obra>\n`;
+    xml += `    </Contrato>\n`;
+  });
+
+  xml += `  </RolContratos>\n</Raiz>`;
+
+  const blob = new Blob([xml], { type: "application/xml" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "contratos.xml";
+  link.click();
+}
+
+  </script>
+  <script>
+    if (document.addEventListener) {
+        document.addEventListener("contextmenu", function(e) {
+            e.preventDefault();
+            return false;
+        });
+    } else { //Versões antigas do IE
+        document.attachEvent("oncontextmenu", function(e) {
+            e = e || window.event;
+            e.returnValue = false;
+            return false;
+        });
+    }
+    </script>
+    <script>
+        if (document.addEventListener) {
+            document.addEventListener("keydown", bloquearSource);
+        } else { //Versões antigas do IE
+            document.attachEvent("onkeydown", bloquearSource);
+        }
+        
+        function bloquearSource(e) {
+            e = e || window.event;
+        
+            var code = e.which || e.keyCode;
+        
+            if (
+                e.ctrlKey &&
+                (code == 83 || code == 85) //83 = S, 85 = U
+            ) {
+                if (e.preventDefault) {
+                    e.preventDefault();
+                } else {
+                    e.returnValue = false;
+                }
+        
+                return false;
+            }
+        }
+        </script>
+</body>
+</html>
